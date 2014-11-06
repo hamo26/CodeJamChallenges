@@ -7,12 +7,13 @@ package com.codejam
 import org.junit.Test
 
 /**
- * Tests for the {@link RopeIntranet} class.
+ * Tests {@link RopeIntranet}.
  */
-class RopeIntranetTest
-{
-    @Test
-    void ensureNumberOfIntersectionsCalculatedCorrectly() {
-        assert 2 == new  RopeIntranet().calculateIntersections([[0,3], [2,2], [1,1]])
+class RopeIntranetTest {
+    def ropeIntranet = new RopeIntranet()
+
+	@Test
+	void ensureNumberOfIntersectionIsReturnedCorrectly() {
+        assert 2 == ropeIntranet.calculateIntersections([[4,4], [3,5], [2,1], [1,2]])
     }
 }

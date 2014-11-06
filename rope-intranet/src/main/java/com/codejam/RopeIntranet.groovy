@@ -1,42 +1,31 @@
+//
+// Generated from archetype; please customize.
+//
+
 package com.codejam
 
 /**
- * RopeIntranet.
+ * Rope Intranet.
  */
 class RopeIntranet
 {
-    static def calculateIntersections(def pointPairs) {
-        def count = 0
-        for (int i = 0; i < pointPairs.size(); i++) {
-            for (int j = i + 1; j < pointPairs.size(); j++) {
-                if ((pointPairs[i][0] < pointPairs[j][0] && pointPairs[i][1] > pointPairs[j][1]) ||
-                        (pointPairs[i][0] > pointPairs[j][0] && pointPairs[i][1] < pointPairs[j][1])) {
-                     count++;
-                }
-            }
-        }
-        return count;
-    }
+    def calculateIntersections(def pointPairs) {
+        def leftHeights = []
+		def rightHeights = []
 
-    static void main(String[] args) {
 
-        def testInput = new File(args[0]).newReader()
-        def testOutput = new File('output').newWriter()
-        def caseNumber = 1
-        def numCases = testInput.readLine().toInteger()
+		pointPairs.each{ pointPair ->
+			leftHeights.add(pointPair[0])
+			rightHeights.add(pointPair[1])
+		}
 
-        while (caseNumber <= numCases) {
-            def testInputs = testInput.readLine().toInteger()
-            def pairPoints = []
-            (1..testInputs).each {
-                def splitEntry = testInput.readLine().split()
-                pairPoints.add([splitEntry[0].toInteger(), splitEntry[1].toInteger()])
-            }
+		Collections.reverse(rightHeights.sort())
 
-            testOutput.writeLine("Case #${caseNumber}: ${calculateIntersections(pairPoints)}")
-            caseNumber++
-        }
+		int intersectionCount = 0;
+		for (def intersection : pointPairs) {
+			intersectionCount+=(Collections.binarySearch(rightHeights, intersection[1])-Math.abs(Collections.binarySearch(rightHeights, intersection[0])))
+		}
 
-        testOutput.close()
+		return intersectionCount;
     }
 }
