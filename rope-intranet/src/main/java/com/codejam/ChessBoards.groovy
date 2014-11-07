@@ -7,92 +7,99 @@ package com.codejam
 /**
  * Rope Intranet.
  */
-class ChessBoards
-{
-    static def cutChessBoards(char [][] inputMatrix) {
-        def chessBoardSizes = [:]
-        chessBoardSizes.put(1, new LinkedHashSet())
+class ChessBoards {
+	static def cutChessBoards(char[][] inputMatrix) {
+		def chessBoardSizes = [:]
+		chessBoardSizes.put(1, new LinkedHashSet())
 
-        //add all coordinates as candidates of size 1 chessboards.
-        for (int i = 0; i < inputMatrix.size(); i++) {
-            for (int j = 0; j < inputMatrix[i].size(); j++) {
-                chessBoardSizes.get(1).add([i, j])
-            }
+		//add all coordinates as candidates of size 1 chessboards.
+		for (int i = 0; i < inputMatrix.size(); i++) {
+			for (int j = 0; j < inputMatrix[i].size(); j++) {
+				chessBoardSizes.get(1).add([i, j])
+			}
 
-        }
+		}
 
-        //start with size 2 and move up until no larger boards can be built
-        for (int size = 2; size < inputMatrix[0].size(); size++) {
-            def previousSizeCoordinates = chessBoardSizes.get(size-1)
+		//start with size 2 and move up until no larger boards can be built
+		for (int size = 2; size < inputMatrix[0].size(); size++) {
+			def previousSizeCoordinates = chessBoardSizes.get(size - 1)
 
-            if (previousSizeCoordinates.isEmpty()) { break }
+			if (previousSizeCoordinates.isEmpty()) {
+				break
+			}
 
-            chessBoardSizes.put(size, new LinkedHashSet())
+			chessBoardSizes.put(size, new LinkedHashSet())
 
-            def currentSizeSet = chessBoardSizes.get(size)
+			def currentSizeSet = chessBoardSizes.get(size)
 
-            previousSizeCoordinates.removeAll { pair ->
-                if (isSquareOfSize(size, pair, inputMatrix)) {
-                    currentSizeSet.add(pair)
-                    true
-                } else {
-                    false
-                }
-            }
-
-            previousSizeCoordinates.removeAll { pair -> hasOverLap(size, pair, currentSizeSet) }
-        }
+			previousSizeCoordinates.each { pair ->
+				if (isSquareOfSize(size, pair, inputMatrix)) {
+					currentSizeSet.add(pair)
+					true
+				} else {
+					false
+				}
+			}
 
 
-        return chessBoardSizes;
+		}
+
+		chessBoardSizes.reverseEach { boardSize, coordinateSet ->
+			coordinateSet.removeAll { pair ->
+				if (canCut(pair, boardSize, inputMatrix)) {
+					cut(pair, boardSize, inputMatrix)
+					false
+				} else {
+					true
+				}
+			}
+		}
+
+		return chessBoardSizes;
 	}
 
-    static boolean hasOverLap(int size, def previousSizePair, def currentSizeSet) {
-        currentSizeSet.any { currentSizePair -> rectOverlap(size, previousSizePair, currentSizePair) }
+	static boolean canCut(def pair, def boardSize, char[][] inputMatrix) {
+		for (int i = pair[0]; i < pair[0] + boardSize; i++) {
+			for (int j = pair[1]; j < pair[1] + boardSize; j++) {
+				if (inputMatrix[i][j] == '2') {
+					return false
+				}
+			}
+		}
 
-    }
+		return true
+	}
 
-    static boolean valueInRange(int value, int min, int max){ return (value >= min) && (value <= max); }
+	static void cut(def pair, def boardSize, char[][] inputMatrix) {
+		for (int i = pair[0]; i < pair[0] + boardSize; i++) {
+			for (int j = pair[1]; j < pair[1] + boardSize; j++) {
+				inputMatrix[i][j] = '2'
+			}
+		}
+	}
 
-    static boolean rectOverlap(int size, def previousSizePair, def currentSizePair) {
-        boolean xOverlap = valueInRange(previousSizePair[0], currentSizePair[0], currentSizePair[0] + size) ||
-                valueInRange(currentSizePair[0], previousSizePair[0], previousSizePair[0]+ size - 1);
+	static boolean isSquareOfSize(int size, def coordinatePair, char[][] inputMatrix) {
+		if (coordinatePair[0] + size > inputMatrix.size() || coordinatePair[1] + size > inputMatrix[0].size()) {
+			return false
+		}
 
-        boolean yOverlap = valueInRange(previousSizePair[1], currentSizePair[1], currentSizePair[1] + size) ||
-                valueInRange(currentSizePair[1], previousSizePair[1], previousSizePair[1]+ size - 1);
+		int rightIndex = coordinatePair[1] + size - 1
+		int bottomIndex = coordinatePair[0] + size - 1
 
-        return xOverlap && yOverlap;
-    }
+		for (int i = coordinatePair[0]; i < bottomIndex + 1; i++) {
+			if (!(inputMatrix[i][rightIndex - 1] as int ^ inputMatrix[i][rightIndex] as int)) {
+				return false
+			}
+		}
 
-    static boolean isSquareOfSize(int size, def coordinatePair, char[][] inputMatrix) {
-        if (coordinatePair[0] + size > inputMatrix.size() || coordinatePair[1] + size > inputMatrix[0].size()) {
-            return false
-        }
+		for (int j = coordinatePair[1]; j < rightIndex + 1; j++) {
+			if (!(inputMatrix[bottomIndex-1][j] as int ^ inputMatrix[bottomIndex][j] as int)) {
+				return false
+			}
+		}
 
-        int rightIndex = coordinatePair[1] + size - 1
-        if (inputMatrix[coordinatePair[0]][rightIndex-1] as int ^ inputMatrix[coordinatePair[0]][rightIndex] as int) {
-            for (int i = coordinatePair[0]; i < coordinatePair[0] + size -1; i++) {
-                if (!xor(inputMatrix[i][coordinatePair[1]..rightIndex], inputMatrix[i+1][coordinatePair[1]..rightIndex])) {
-                    return false
-                }
-            }
-
-            return true
-        } else {
-            return false
-        }
-    }
-
-    static boolean xor (def a, def b )
-    {
-        for ( int i=0; i<a.size() ; i++ )
-        {
-            if (!(a[i] as int ^ b[i] as int)) {
-                return false
-            }
-        }
-        return true
-    }
+		return true
+	}
 
 	static void main(String[] args) {
 		def testInput = new File(args[0]).newReader()
@@ -104,12 +111,12 @@ class ChessBoards
 
 			def rows = dimensions[0].toInteger()
 			def columns = dimensions[1].toInteger()
-			char [][] boardInput = new char [rows][columns]
+			char[][] boardInput = new char[rows][columns]
 
-			for (int i = 0; i<rows; i++) {
+			for (int i = 0; i < rows; i++) {
 				def hexValues = testInput.readLine().toCharArray()
 				def rowValues = []
-				hexValues.each{ hexValue ->
+				hexValues.each { hexValue ->
 					rowValues.addAll(
 							String.format("%4s", Integer.toBinaryString(Integer.parseInt(hexValue.toString(), 16))).replace(' ', '0').toCharArray()
 					)
@@ -117,11 +124,20 @@ class ChessBoards
 				boardInput[i] = rowValues
 			}
 
+			System.out.println("On case#${caseNumber}")
+
 			def chessSizes = cutChessBoards(boardInput)
-			testOutput.writeLine("Case #${caseNumber}: ${chessSizes.size()}")
-			chessSizes.each { size, numBoards -> testOutput.writeLine("${size} ${numBoards}")}
+			def filteredChessSizes = chessSizes.findAll { it.value.size() > 0 }
+			testOutput.writeLine("Case #${caseNumber}: ${filteredChessSizes.size()}")
+
+			filteredChessSizes.reverseEach { chessSize, boards ->
+				testOutput.writeLine("${chessSize} ${boards.size()}")
+			}
+
+
 			caseNumber++
 		}
+
 		testOutput.close()
 	}
 }
