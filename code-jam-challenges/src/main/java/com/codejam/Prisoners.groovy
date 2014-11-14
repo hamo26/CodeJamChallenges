@@ -16,7 +16,7 @@ class Prisoners {
 
 			System.out.println("On case#${caseNumber}")
 
-			testOutput.writeLine("Case #${caseNumber}: ${calcBribeCoins(numPrisonCells, new HashSet(Arrays.asList(prisonersToRelease)))}")
+			testOutput.writeLine("Case #${caseNumber}: ${calcBribeCoins(numPrisonCells, new HashSet(prisonersToRelease.collect { Integer.valueOf(it) }))}")
 
 			caseNumber++
 		}
@@ -31,10 +31,7 @@ class Prisoners {
         // We can memoize ranges and optimal bribe values when found.
         def cache = [:]
 
-        def minBribes = calcBribes(1, numPrisonCells, new HashSet(prisonersToRelease.collect { Integer.valueOf(it) }), cache)
-
-        return minBribes
-
+        calcBribes(1, numPrisonCells, prisonersToRelease, cache)
     }
 
     static def calcBribes(def startingIndex, def endIndex, def prisonersToRelease, def cache) {
